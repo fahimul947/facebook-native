@@ -1,0 +1,90 @@
+public class DashboardFragment extends Fragment {
+ 
+    private FragmentDashboardBinding binding;
+    private NativeAd nativeAd;
+
+    public DashboardFragment() {
+        // Required empty public constructor
+    }
+
+   @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        binding = FragmentDashboardBinding.inflate(inflater, container, false);
+
+ 	//Facebook Native ads
+        nativeAd = new NativeAd(requireActivity(), getString(R.string.fb_native_ads_id));
+        nativeAd.loadAd(nativeAd.buildLoadAdConfig().withAdListener(new NativeAdListener() {
+            @Override
+            public void onMediaDownloaded(Ad ad) {
+
+            }
+
+            @Override
+            public void onError(Ad ad, AdError adError) {
+
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+                if (nativeAd == null || nativeAd != ad) {
+                    return;
+                }
+                inflateAd(nativeAd);
+
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+
+            }
+        }).build());
+
+
+
+
+
+        return binding.getRoot();
+    }
+
+
+
+    private void inflateAd(NativeAd nativeAdLayout) {
+        nativeAdLayout.unregisterView();
+        LayoutFbNativeAdsBinding layoutFbNativeAdsBinding = DataBindingUtil.inflate(LayoutInflater.from(getContext()), R.layout.layout_fb_native_ads, binding.nativeAdContainer, false);
+        binding.nativeAdContainer.addView(layoutFbNativeAdsBinding.getRoot());
+        LinearLayout adChoicesContainer = layoutFbNativeAdsBinding.adChoicesContainer;
+        AdOptionsView adOptionsView = new AdOptionsView(requireActivity(), nativeAd, binding.nativeAdContainer);
+        adChoicesContainer.removeAllViews();
+        adChoicesContainer.addView(adOptionsView, 0);
+        // Setting  the Text.
+
+        layoutFbNativeAdsBinding.nativeAdTitle.setText(nativeAd.getAdvertiserName());
+        layoutFbNativeAdsBinding.nativeAdBody.setText(nativeAd.getAdBodyText());
+        layoutFbNativeAdsBinding.nativeAdSocialContext.setText(nativeAd.getAdSocialContext());
+        layoutFbNativeAdsBinding.nativeAdCallToAction.setVisibility(nativeAd.hasCallToAction() ? View.VISIBLE : View.INVISIBLE);
+        layoutFbNativeAdsBinding.nativeAdCallToAction.setText(nativeAd.getAdCallToAction());
+        layoutFbNativeAdsBinding.nativeAdSponsoredLabel.setText(nativeAd.getSponsoredTranslation());
+
+        // Create a list of clickable views
+        List<View> viewList = new ArrayList<>();
+        viewList.add(layoutFbNativeAdsBinding.nativeAdTitle);
+        viewList.add(layoutFbNativeAdsBinding.nativeAdCallToAction);
+
+        nativeAdLayout.registerViewForInteraction(
+                layoutFbNativeAdsBinding.getRoot(),
+                layoutFbNativeAdsBinding.nativeAdMedia,
+                layoutFbNativeAdsBinding.nativeAdIcon,
+                viewList);
+
+    }
+
+
+
+
+}
